@@ -1,10 +1,12 @@
 package com.bootcampqualitychallenge.dto;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 import javax.validation.constraints.*;
 
 @Getter
+@AllArgsConstructor
 public class Room {
     @NotBlank(message = "O nome do cômodo não pode estar vazio.")
     @Pattern(regexp = "^([A-Z][a-z]+\\s)*[A-Z][a-z]+$", message = "Cada palavra do nome deve começar com uma letra maiúscula seguida de minúsculas.")

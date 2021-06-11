@@ -21,7 +21,7 @@ public class PropertyController {
     private final PropertyService propertyService;
 
     @PostMapping
-    ResponseEntity<EvaluatePropertyResponse> evaluateProperty(@RequestBody @Valid Property property) throws NeighborhoodNotFound, NoBiggestRoom {
+    public ResponseEntity<EvaluatePropertyResponse> evaluateProperty(@RequestBody @Valid Property property) throws NeighborhoodNotFound, NoBiggestRoom {
         return ResponseEntity.ok(propertyService.evaluateProperty(property));
     }
 }

@@ -4,7 +4,7 @@ import com.bootcampqualitychallenge.entity.Neighborhood;
 import com.bootcampqualitychallenge.exception.NeighborhoodNotFound;
 import com.bootcampqualitychallenge.repository.NeighborhoodRepository;
 import com.bootcampqualitychallenge.service.NeighborhoodService;
-import com.bootcampqualitychallenge.util.NeighborhoodFactory;
+import com.bootcampqualitychallenge.util.builder.NeighborhoodBuilder;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -28,8 +28,8 @@ class NeighborhoodServiceTest {
 
     @Test
     void whenFindByNameIsCalledWithExistingNameItReturnsTheNeighborhood() throws NeighborhoodNotFound {
-        String name = "Meu Bairro";
-        Neighborhood expectedNeighborhood = NeighborhoodFactory.from(name);
+        String name = "My Neighborhood";
+        Neighborhood expectedNeighborhood = NeighborhoodBuilder.builder().id(1L).name(name).build();
 
         when(neighborhoodRepository.findByName(name)).thenReturn(Optional.of(expectedNeighborhood));
 
@@ -40,7 +40,7 @@ class NeighborhoodServiceTest {
 
     @Test
     void whenFindByNameIsCalledWithNonExistingNameItReturnsAEmptyOptional() {
-        String name = "Meu Bairro";
+        String name = "My Neighborhood";
 
         when(neighborhoodRepository.findByName(name)).thenReturn(Optional.empty());
 

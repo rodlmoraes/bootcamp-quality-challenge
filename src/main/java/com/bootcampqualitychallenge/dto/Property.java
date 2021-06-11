@@ -1,5 +1,6 @@
 package com.bootcampqualitychallenge.dto;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 import javax.validation.Valid;
@@ -7,6 +8,7 @@ import javax.validation.constraints.*;
 import java.util.List;
 
 @Getter
+@AllArgsConstructor
 public class Property {
     @NotBlank(message = "O nome da propriedade não pode estar vazio.")
     @Pattern(regexp = "^([A-Z][a-z]+\\s)*[A-Z][a-z]+$", message = "Cada palavra do nome deve começar com uma letra maiúscula seguida de minúsculas.")

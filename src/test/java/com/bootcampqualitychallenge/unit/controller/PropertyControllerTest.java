@@ -1,5 +1,6 @@
-package com.bootcampqualitychallenge.unit.service;
+package com.bootcampqualitychallenge.unit.controller;
 
+import com.bootcampqualitychallenge.controller.PropertyController;
 import com.bootcampqualitychallenge.dto.EvaluatePropertyResponse;
 import com.bootcampqualitychallenge.dto.EvaluatedRoom;
 import com.bootcampqualitychallenge.dto.Property;
@@ -7,7 +8,6 @@ import com.bootcampqualitychallenge.dto.Room;
 import com.bootcampqualitychallenge.entity.Neighborhood;
 import com.bootcampqualitychallenge.exception.NeighborhoodNotFound;
 import com.bootcampqualitychallenge.exception.NoBiggestRoom;
-import com.bootcampqualitychallenge.service.NeighborhoodService;
 import com.bootcampqualitychallenge.service.PropertyService;
 import com.bootcampqualitychallenge.util.builder.EvaluatedRoomBuilder;
 import com.bootcampqualitychallenge.util.builder.NeighborhoodBuilder;
@@ -18,8 +18,11 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 
 import java.util.List;
+import java.util.Objects;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
@@ -27,23 +30,23 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class PropertyServiceTest {
+public class PropertyControllerTest {
     @InjectMocks
-    private PropertyService propertyService;
+    private PropertyController propertyController;
 
     @Mock
-    private NeighborhoodService neighborhoodService;
+    private PropertyService propertyService;
 
     @Test
     void whenEvaluatePropertyIsCalledWithValidParametersItReturnsThePropertyName() throws NeighborhoodNotFound, NoBiggestRoom {
-        String neighborhood = "My Neighborhood";
-        String propertyName = "House Of Flowers";
-        Property property = PropertyBuilder.builder().name(propertyName).neighborhood(neighborhood).build();
+        String name = "House Of Flowers";
+        Property property = PropertyBuilder.builder().name(name).build();
 
-        when(neighborhoodService.findByName(neighborhood)).thenReturn(NeighborhoodBuilder.builder().id(1L).name(neighborhood).build());
-        EvaluatePropertyResponse response = propertyService.evaluateProperty(property);
+        when(propertyService.evaluateProperty(property)).thenReturn(EvaluatePropertyResponse.builder().name(name).build());
+        ResponseEntity<EvaluatePropertyResponse> response = propertyController.evaluateProperty(property);
 
-        assertThat(response.getName(), equalTo(propertyName));
+        assertThat(Objects.requireNonNull(response.getBody()).getName(), equalTo(name));
+        assertThat(response.getStatusCode(), equalTo(HttpStatus.OK));
     }
 
     @Test
@@ -53,12 +56,7 @@ class PropertyServiceTest {
         Room livingRoom = RoomBuilder.builder().name("Living Room").width(6.0).length(6.0).build();
         List<Room> rooms = List.of(parentsRoom, sonsRoom, livingRoom);
 
-        String neighborhood = "My Neighborhood";
-
-        Property property = PropertyBuilder.builder().neighborhood(neighborhood).rooms(rooms).build();
-
-        when(neighborhoodService.findByName(neighborhood)).thenReturn(NeighborhoodBuilder.builder().id(1L).name(neighborhood).build());
-        EvaluatePropertyResponse response = propertyService.evaluateProperty(property);
+        Property property = PropertyBuilder.builder().rooms(rooms).build();
 
         List<EvaluatedRoom> expectedRooms = List.of(
                 EvaluatedRoomBuilder.builder().name(parentsRoom.getName()).squareMeters(parentsRoom.getWidth() * parentsRoom.getLength()).build(),
@@ -66,7 +64,11 @@ class PropertyServiceTest {
                 EvaluatedRoomBuilder.builder().name(livingRoom.getName()).squareMeters(livingRoom.getWidth() * livingRoom.getLength()).build()
         );
 
-        assertThat(response.getRooms(), equalTo(expectedRooms));
+        when(propertyService.evaluateProperty(property)).thenReturn(EvaluatePropertyResponse.builder().rooms(expectedRooms).build());
+        ResponseEntity<EvaluatePropertyResponse> response = propertyController.evaluateProperty(property);
+
+        assertThat(Objects.requireNonNull(response.getBody()).getRooms(), equalTo(expectedRooms));
+        assertThat(response.getStatusCode(), equalTo(HttpStatus.OK));
     }
 
     @Test
@@ -75,16 +77,15 @@ class PropertyServiceTest {
         Room biggerRoom = RoomBuilder.builder().width(7.4).length(2.3).build();
         List<Room> rooms = List.of(smallerRoom, biggerRoom);
 
-        String neighborhood = "My Neighborhood";
-
-        Property property = PropertyBuilder.builder().neighborhood(neighborhood).rooms(rooms).build();
-
-        when(neighborhoodService.findByName(neighborhood)).thenReturn(NeighborhoodBuilder.builder().id(1L).name(neighborhood).build());
-        EvaluatePropertyResponse response = propertyService.evaluateProperty(property);
+        Property property = PropertyBuilder.builder().rooms(rooms).build();
 
         Double expectedTotalSquareMeters = smallerRoom.getWidth() * smallerRoom.getLength() + biggerRoom.getWidth() * biggerRoom.getLength();
 
-        assertThat(response.getTotalSquareMeters(), equalTo(expectedTotalSquareMeters));
+        when(propertyService.evaluateProperty(property)).thenReturn(EvaluatePropertyResponse.builder().totalSquareMeters(expectedTotalSquareMeters).build());
+        ResponseEntity<EvaluatePropertyResponse> response = propertyController.evaluateProperty(property);
+
+        assertThat(Objects.requireNonNull(response.getBody()).getTotalSquareMeters(), equalTo(expectedTotalSquareMeters));
+        assertThat(response.getStatusCode(), equalTo(HttpStatus.OK));
     }
 
     @Test
@@ -97,12 +98,13 @@ class PropertyServiceTest {
 
         Property property = PropertyBuilder.builder().neighborhood(neighborhood.getName()).rooms(rooms).build();
 
-        when(neighborhoodService.findByName(neighborhood.getName())).thenReturn(neighborhood);
-        EvaluatePropertyResponse response = propertyService.evaluateProperty(property);
-
         Double expectedPrice = neighborhood.getSquareMeterPrice() * (firstRoom.getWidth() * firstRoom.getLength() + secondRoom.getWidth() * secondRoom.getLength());
 
-        assertThat(response.getPrice(), equalTo(expectedPrice));
+        when(propertyService.evaluateProperty(property)).thenReturn(EvaluatePropertyResponse.builder().price(expectedPrice).build());
+        ResponseEntity<EvaluatePropertyResponse> response = propertyController.evaluateProperty(property);
+
+        assertThat(Objects.requireNonNull(response.getBody()).getPrice(), equalTo(expectedPrice));
+        assertThat(response.getStatusCode(), equalTo(HttpStatus.OK));
     }
 
     @Test
@@ -112,16 +114,15 @@ class PropertyServiceTest {
         Room bathroom = RoomBuilder.builder().name("Bathroom").width(4.5).length(4.7).build();
         List<Room> rooms = List.of(kitchen, biggestRoom, bathroom);
 
-        String neighborhood = "My Neighborhood";
-
-        Property property = PropertyBuilder.builder().neighborhood(neighborhood).rooms(rooms).build();
-
-        when(neighborhoodService.findByName(neighborhood)).thenReturn(NeighborhoodBuilder.builder().id(1L).name(neighborhood).build());
-        EvaluatePropertyResponse response = propertyService.evaluateProperty(property);
+        Property property = PropertyBuilder.builder().rooms(rooms).build();
 
         EvaluatedRoom expectedRoom = EvaluatedRoomBuilder.builder().name(biggestRoom.getName()).squareMeters(biggestRoom.getWidth() * biggestRoom.getLength()).build();
 
-        assertThat(response.getBiggestRoom(), equalTo(expectedRoom));
+        when(propertyService.evaluateProperty(property)).thenReturn(EvaluatePropertyResponse.builder().biggestRoom(expectedRoom).build());
+        ResponseEntity<EvaluatePropertyResponse> response = propertyController.evaluateProperty(property);
+
+        assertThat(Objects.requireNonNull(response.getBody()).getBiggestRoom(), equalTo(expectedRoom));
+        assertThat(response.getStatusCode(), equalTo(HttpStatus.OK));
     }
 
     @Test
@@ -131,26 +132,24 @@ class PropertyServiceTest {
         Room secondBiggestRoom = RoomBuilder.builder().name("Second Biggest Room").width(5.0).length(5.0).build();
         List<Room> rooms = List.of(bathroom, firstBiggestRoom, secondBiggestRoom);
 
-        String neighborhood = "My Neighborhood";
-
-        Property property = PropertyBuilder.builder().neighborhood(neighborhood).rooms(rooms).build();
-
-        when(neighborhoodService.findByName(neighborhood)).thenReturn(NeighborhoodBuilder.builder().id(1L).name(neighborhood).build());
-        EvaluatePropertyResponse response = propertyService.evaluateProperty(property);
+        Property property = PropertyBuilder.builder().rooms(rooms).build();
 
         EvaluatedRoom expectedRoom = EvaluatedRoomBuilder.builder().name(firstBiggestRoom.getName()).squareMeters(firstBiggestRoom.getWidth() * firstBiggestRoom.getLength()).build();
 
-        assertThat(response.getBiggestRoom(), equalTo(expectedRoom));
+        when(propertyService.evaluateProperty(property)).thenReturn(EvaluatePropertyResponse.builder().biggestRoom(expectedRoom).build());
+        ResponseEntity<EvaluatePropertyResponse> response = propertyController.evaluateProperty(property);
+
+        assertThat(Objects.requireNonNull(response.getBody()).getBiggestRoom(), equalTo(expectedRoom));
+        assertThat(response.getStatusCode(), equalTo(HttpStatus.OK));
     }
 
     @Test
-    void whenEvaluatePropertyIsCalledWithNoRoomsItThrowsNoBiggestRoom() throws NeighborhoodNotFound {
-        String neighborhood = "My Neighborhood";
-        Property property = PropertyBuilder.builder().neighborhood(neighborhood).rooms(List.of()).build();
+    void whenEvaluatePropertyIsCalledWithNoRoomsItThrowsNoBiggestRoom() throws NeighborhoodNotFound, NoBiggestRoom {
+        Property property = PropertyBuilder.builder().rooms(List.of()).build();
 
-        when(neighborhoodService.findByName(neighborhood)).thenReturn(NeighborhoodBuilder.builder().id(1L).name(neighborhood).build());
+        when(propertyService.evaluateProperty(property)).thenThrow(new NoBiggestRoom(List.of()));
 
-        assertThrows(NoBiggestRoom.class, () -> propertyService.evaluateProperty(property));
+        assertThrows(NoBiggestRoom.class, () -> propertyController.evaluateProperty(property));
     }
 
     @Test
@@ -160,19 +159,20 @@ class PropertyServiceTest {
 
         Neighborhood expectedNeighborhood = NeighborhoodBuilder.builder().id(1L).name(neighborhood).build();
 
-        when(neighborhoodService.findByName(neighborhood)).thenReturn(expectedNeighborhood);
-        EvaluatePropertyResponse response = propertyService.evaluateProperty(property);
+        when(propertyService.evaluateProperty(property)).thenReturn(EvaluatePropertyResponse.builder().neighborhood(expectedNeighborhood).build());
+        ResponseEntity<EvaluatePropertyResponse> response = propertyController.evaluateProperty(property);
 
-        assertThat(response.getNeighborhood(), equalTo(expectedNeighborhood));
+        assertThat(Objects.requireNonNull(response.getBody()).getNeighborhood(), equalTo(expectedNeighborhood));
+        assertThat(response.getStatusCode(), equalTo(HttpStatus.OK));
     }
 
     @Test
-    void whenEvaluatePropertyIsCalledWithNonExistingNeighborhoodItThrowsNeighborhoodNotFound() throws NeighborhoodNotFound {
+    void whenEvaluatePropertyIsCalledWithNonExistingNeighborhoodItThrowsNeighborhoodNotFound() throws NeighborhoodNotFound, NoBiggestRoom {
         String neighborhood = "My Neighborhood";
         Property property = PropertyBuilder.builder().neighborhood(neighborhood).build();
 
-        when(neighborhoodService.findByName(neighborhood)).thenThrow(new NeighborhoodNotFound(neighborhood));
+        when(propertyService.evaluateProperty(property)).thenThrow(new NeighborhoodNotFound(neighborhood));
 
-        assertThrows(NeighborhoodNotFound.class, () -> propertyService.evaluateProperty(property));
+        assertThrows(NeighborhoodNotFound.class, () -> propertyController.evaluateProperty(property));
     }
 }

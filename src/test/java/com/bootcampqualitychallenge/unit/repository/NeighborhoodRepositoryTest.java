@@ -2,7 +2,7 @@ package com.bootcampqualitychallenge.unit.repository;
 
 import com.bootcampqualitychallenge.entity.Neighborhood;
 import com.bootcampqualitychallenge.repository.NeighborhoodRepository;
-import com.bootcampqualitychallenge.util.NeighborhoodFactory;
+import com.bootcampqualitychallenge.util.builder.NeighborhoodBuilder;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
@@ -23,9 +23,9 @@ class NeighborhoodRepositoryTest {
 
     @Test
     void whenFindByNameIsCalledWithExistingNameItReturnsTheNeighborhood() {
-        String name = "Meu Bairro";
+        String name = "My Neighborhood";
 
-        Neighborhood expectedNeighborhood = entityManager.persist(NeighborhoodFactory.from(name));
+        Neighborhood expectedNeighborhood = entityManager.persist(NeighborhoodBuilder.builder().name(name).build());
         Optional<Neighborhood> foundNeighborhood = neighborhoodRepository.findByName(name);
 
         assertThat(foundNeighborhood, equalTo(Optional.of(expectedNeighborhood)));
@@ -33,7 +33,7 @@ class NeighborhoodRepositoryTest {
 
     @Test
     void whenFindByNameIsCalledWithNonExistingNameItReturnsAEmptyOptional() {
-        String name = "Meu Bairro";
+        String name = "My Neighborhood";
 
         Optional<Neighborhood> foundNeighborhood = neighborhoodRepository.findByName(name);
 
