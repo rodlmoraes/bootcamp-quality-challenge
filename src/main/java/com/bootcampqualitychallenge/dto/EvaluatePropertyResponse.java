@@ -13,10 +13,10 @@ import java.util.List;
 @EqualsAndHashCode
 @AllArgsConstructor
 public class EvaluatePropertyResponse {
-    private String name;
-    private Double totalSquareMeters;
-    private Double price;
-    private EvaluatedRoom biggestRoom;
-    private List<EvaluatedRoom> rooms;
-    private Neighborhood neighborhood;
+    private final String name;
+    private final Double totalSquareMeters;
+    private final Double price;
+    private final EvaluatedRoom biggestRoom;
+    private final List<EvaluatedRoom> rooms;
+    private final Neighborhood neighborhood;
 }

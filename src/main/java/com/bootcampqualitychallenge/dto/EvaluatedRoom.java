@@ -10,8 +10,8 @@ import lombok.Getter;
 @EqualsAndHashCode
 @AllArgsConstructor
 public class EvaluatedRoom {
-    private String name;
-    private Double squareMeters;
+    private final String name;
+    private final Double squareMeters;
 
     @Override
     public String toString() {

@@ -2,10 +2,12 @@ package com.bootcampqualitychallenge.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 import javax.validation.constraints.*;
 
 @Getter
+@NoArgsConstructor
 @AllArgsConstructor
 public class Room {
     @NotBlank(message = "O nome do cômodo não pode estar vazio.")

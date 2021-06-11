@@ -23,8 +23,8 @@ public class ApiExceptionHandler {
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<List<ApiFieldError>> handleMethodArgumentNotValidException(MethodArgumentNotValidException exception) {
-        List<ApiFieldError> errors = exception.getFieldErrors().
-                stream()
+        List<ApiFieldError> errors = exception.getFieldErrors()
+                .stream()
                 .map(error -> new ApiFieldError(error.getDefaultMessage(), error.getField()))
                 .collect(Collectors.toList());
 
